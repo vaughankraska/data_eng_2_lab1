@@ -4,6 +4,15 @@
 - Use the gutenberg project disribution of the pride and prejudice book as the text we are are performing our capization process on. Link: https://www.gutenberg.org/ebooks/1342.txt.utf-8
     - (mini example included in repo as pride_mini.txt)
 
+## To run
+* producer (with full text file): cd into /producer
+```bash
+RUST_LOG=info FILE_PATH=pride_and_pred.txt cargo run --release
+```
+* consumer: cd into consumer
+```bash
+RUST_LOG=info cargo run --release
+```
 
 ## Assignment Description:
 ```text

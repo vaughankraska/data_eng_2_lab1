@@ -14,9 +14,7 @@ async fn main() -> Result<(), PulsarError>{
         .ok()
         .unwrap_or_else(||String::from("pulsar://127.0.0.1:6650"));
 
-    let topic = env::var("PULSAR_TOPIC")
-        .ok()
-        .unwrap_or_else(||String::from("non-persistent://public/default/test"));
+    let topic = String::from("non-persistent://public/default/raw");
 
     let pulsar: Pulsar<_> = Pulsar::builder(addr, TokioExecutor).build().await?;
 
@@ -25,7 +23,7 @@ async fn main() -> Result<(), PulsarError>{
         .with_topic(topic)
         .with_consumer_name("text_consumer")
         .with_options(pulsar::ConsumerOptions::default())
-        .with_subscription_type(SubType::Exclusive)
+        .with_subscription_type(SubType::Shared)
         .build()
         .await?;
 

@@ -1,23 +1,21 @@
-use std::{env, fs::File, io::{BufRead, BufReader, Read}, path::Path};
-use pulsar::{Pulsar, TokioExecutor, producer::ProducerOptions, Error as PulsarError};
+use std::{env, fs::File, io::{BufRead, BufReader}, path::Path, sync::Arc, time::Instant};
+use pulsar::{Pulsar, TokioExecutor, producer::ProducerOptions };
 
 #[tokio::main]
-async fn main() -> Result<(), PulsarError> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
     let addr = env::var("PULSAR_ADDRESS")
         .ok()
         .unwrap_or_else(||String::from("pulsar://127.0.0.1:6650"));
     log::info!("producer address: {}", &addr);
 
-    let topic = env::var("PULSAR_TOPIC")
-        .ok()
-        .unwrap_or_else(||String::from("non-persistent://public/default/test"));
+    let topic = String::from("non-persistent://public/default/raw");
     log::info!("topic: {}", &topic);
 
     let path = env::var("FILE_PATH").ok().unwrap_or_else(|| String::from("pride_mini.txt"));
     let file_path = Path::new(path.as_str());
     if !file_path.exists() {
-       log::error!("File does not exist");
+        log::error!("File does not exist");
     }
     if !file_path.is_file() {
         log::error!("Specified path in not a file");
@@ -36,33 +34,18 @@ async fn main() -> Result<(), PulsarError> {
             ..Default::default()
         }).build().await?;
 
+
+    let start = Instant::now();
+
     let file = File::open(file_path).expect("Could not open file");
     let reader = BufReader::new(file);
+
     for line in reader.lines() {
         let string_line = line.expect("Failed to read line");
-        println!("line:{}", string_line);
+        producer.send(string_line).await?;
     };
+    log::info!("Time to read/send lines: {} m_sec", start.elapsed().as_millis());
 
-
-    let mut counter: usize = 0;
-
-    loop {
-        producer
-            .send(format!("message {}", counter))
-            .await?;
-
-        log::info!("Sent messsage count: {}", &counter);
-        counter += 1;
-        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-        if counter > 10 {
-            producer
-                .close()
-                .await
-                .expect("FAILED TO CLOSE CONNECTION");
-            break;
-        }
-    }
-
-
+    producer.close().await.expect("FAILED TO CLOSE CONNECTION");
     Ok(())
 }
