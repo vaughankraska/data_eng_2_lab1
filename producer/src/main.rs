@@ -1,4 +1,4 @@
-use std::{env, fs::File, io::{BufRead, BufReader}, path::Path, sync::Arc, time::Instant};
+use std::{env, fs::File, io::{BufRead, BufReader}, path::Path, time::Instant};
 use pulsar::{Pulsar, TokioExecutor, producer::ProducerOptions };
 
 #[tokio::main]
@@ -9,6 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap_or_else(||String::from("pulsar://127.0.0.1:6650"));
     log::info!("producer address: {}", &addr);
 
+    // let topic = String::from("persistent://public/default/test_src");
     let topic = String::from("non-persistent://public/default/raw");
     log::info!("topic: {}", &topic);
 
@@ -20,6 +21,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if !file_path.is_file() {
         log::error!("Specified path in not a file");
     }
+    log::info!("File path: {}", &path);
 
 
     let builder = Pulsar::builder(addr, TokioExecutor);
@@ -39,12 +41,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let file = File::open(file_path).expect("Could not open file");
     let reader = BufReader::new(file);
+    let mut counter = 0;
 
     for line in reader.lines() {
+        counter += 1;
         let string_line = line.expect("Failed to read line");
         producer.send(string_line).await?;
     };
-    log::info!("Time to read/send lines: {} m_sec", start.elapsed().as_millis());
+    log::info!("Time to read/send {} lines: {} m_sec", counter, start.elapsed().as_millis());
 
     producer.close().await.expect("FAILED TO CLOSE CONNECTION");
     Ok(())

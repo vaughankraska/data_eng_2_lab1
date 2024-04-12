@@ -1,6 +1,6 @@
 use std::env;
 use pulsar::{
-    message::{proto::command_subscribe::SubType, Payload},
+    message::proto::command_subscribe::SubType,
     Consumer, Pulsar, TokioExecutor, Error as PulsarError,
 };
 use futures::TryStreamExt;
@@ -23,20 +23,28 @@ async fn main() -> Result<(), PulsarError>{
         .with_topic(topic)
         .with_consumer_name("text_consumer")
         .with_options(pulsar::ConsumerOptions::default())
-        .with_subscription_type(SubType::Shared)
+        .with_subscription("text-sub")
+        .with_subscription_type(SubType::Failover)
         .build()
         .await?;
 
     let mut counter: usize = 0;
 
+
     while let Some(msg) = consumer.try_next().await? {
-        consumer.ack(&msg).await?;
-        log::info!("id: {:?}", msg.message_id());
 
-        println!("string message: {:?}", msg.deserialize().expect("could not deserialize message"));
-
-        log::info!("Processed {} messages", counter);
         counter += 1;
+        consumer.ack(&msg).await?;
+
+        let data = match msg.deserialize() {
+            Ok(data) => data,
+            Err(e) => {
+                log::error!("could not deserialize message: {:?}", e);
+                break;
+            }
+        };
+        log::info!("string message: {:?}", &data);
+        log::info!("Processed {} messages", counter);
     };
 
 
