@@ -14,7 +14,7 @@ async fn main() -> Result<(), PulsarError>{
         .ok()
         .unwrap_or_else(||String::from("pulsar://127.0.0.1:6650"));
 
-    let topic = String::from("non-persistent://public/default/raw");
+    let topic = String::from("persistent://public/default/uppered");
 
     let pulsar: Pulsar<_> = Pulsar::builder(addr, TokioExecutor).build().await?;
 
@@ -24,7 +24,7 @@ async fn main() -> Result<(), PulsarError>{
         .with_consumer_name("text_consumer")
         .with_options(pulsar::ConsumerOptions::default())
         .with_subscription("text-sub")
-        .with_subscription_type(SubType::Failover)
+        .with_subscription_type(SubType::Exclusive)
         .build()
         .await?;
 

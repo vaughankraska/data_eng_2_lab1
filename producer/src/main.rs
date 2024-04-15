@@ -10,7 +10,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("producer address: {}", &addr);
 
     // let topic = String::from("persistent://public/default/test_src");
-    let topic = String::from("non-persistent://public/default/raw");
+    let topic = String::from("persistent://public/default/raw");
     log::info!("topic: {}", &topic);
 
     let path = env::var("FILE_PATH").ok().unwrap_or_else(|| String::from("pride_mini.txt"));
