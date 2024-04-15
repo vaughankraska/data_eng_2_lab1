@@ -1,0 +1,53 @@
+version: '3'
+networks:
+  pulsar:
+    driver: bridge
+services:
+  # start pulsar standalone
+  pulsar:
+    image: apachepulsar/pulsar:3.2.2
+    networks:
+      - pulsar
+    ports:
+      - "6650:6650"
+      - "8080:8080"
+    # environment:
+    #   PULSAR_PREFIX_xxx: yyy
+    volumes:
+      - type: volume
+        source: pulsardata
+        target: /pulsar/data
+      - type: volume
+        source: pulsarconf
+        target: /pulsar/conf
+    command: "bin/pulsar standalone"
+  # start consumer
+  consumer:
+    build: consumer
+    container_name: consumer
+    networks:
+      - pulsar
+    ports:
+      - "3000:3000"
+    environment:
+      - RUST_LOG=info
+    depends_on:
+      - pulsar
+    command: "/bin/server"
+  # start producer
+  producer:
+    build: producer
+    container_name: producer
+    networks:
+      - pulsar
+    ports:
+      - "3001:3001"
+    depends_on:
+      - consumer
+    environment:
+      - RUST_LOG=info
+      - FILE_PATH=pride_mini.txt
+    command: "/bin/server"
+volumes:
+  pulsardata:
+  pulsarconf:
