@@ -1,9 +1,11 @@
 from pulsar import Function
 
- class RoutingFunction(Function):
-     def __init__(self):
-         self.split_words = "persistent://public/default/split"
+class SplitterFunc(Function):
+  def __init__(self):
+    pass
 
-     def process(self, input, context):
-         for word in input.split(" "):
-             context.publish(self.split_words, word);
+  def process(self, input, context):
+    pub_topic = "split";
+    for word in input.split():
+        context.publish(pub_topic, word);
+    return;
