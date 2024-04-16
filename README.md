@@ -13,7 +13,25 @@ RUST_LOG=info FILE_PATH=pride_and_pred.txt cargo run --release
 ```bash
 RUST_LOG=info cargo run --release
 ```
-
+### Running the pulsar functions:
+* Capitalizer
+```bash
+bin/pulsar-admin functions localrun   --py $PWD/capitalizer.py   --classname capitalizer   --inputs persistent://public/default/split   --output persistent://public/default/upper
+```
+* Splitter
+```bash
+bin/pulsar-admin functions localrun   --py $PWD/splitter.py   --classname splitter.SplitterFunc   --inputs persistent://public/default/raw   --output persistent://public/default/split
+```
+## Messaging flow:
+text file -> 
+    producer -> 
+        'raw' (topic) -> 
+            splitter (Function) -> 
+                'split' (topic) -> 
+                    capitalizer (Function) ->
+                        'upper' (topic) ->
+                            consumer ->
+                                merged to 'output.txt' file
 ## Assignment Description:
 ```text
 The repository consists of a conversion.py file which demonstrates a code that has a

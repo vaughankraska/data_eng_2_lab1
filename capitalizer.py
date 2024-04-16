@@ -1,2 +1,2 @@
 def process(input):
-  return input.upper();
+  return str(input).upper();

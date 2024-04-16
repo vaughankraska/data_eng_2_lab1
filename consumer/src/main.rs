@@ -1,13 +1,14 @@
-use std::env;
+use std::{env, fs::File,};
+use std::io::Write;
 use pulsar::{
     message::proto::command_subscribe::SubType,
-    Consumer, Pulsar, TokioExecutor, Error as PulsarError,
+    Consumer, Pulsar, TokioExecutor
 };
 use futures::TryStreamExt;
 
 
 #[tokio::main]
-async fn main() -> Result<(), PulsarError>{
+async fn main() -> Result<(), Box<dyn std::error::Error>>{
     env_logger::init();
 
     let addr = env::var("PULSAR_ADDRESS")
@@ -30,6 +31,7 @@ async fn main() -> Result<(), PulsarError>{
 
     let mut counter: usize = 0;
 
+    let mut buffer = File::create("output.txt")?;
 
     while let Some(msg) = consumer.try_next().await? {
 
@@ -43,6 +45,8 @@ async fn main() -> Result<(), PulsarError>{
                 break;
             }
         };
+        let _ = buffer.write(&msg.payload.data);
+        let _ = buffer.write(" ".as_bytes());
         log::info!("string message: {:?}", &data);
         log::info!("Processed {} messages", counter);
     };
