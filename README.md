@@ -1,7 +1,7 @@
 # Data Engineering II Lab I
 ## My implementation
 - Use rust to implement the producers and consumers
-- Use the gutenberg project disribution of the pride and prejudice book as the text we are are performing our capization process on. Link: https://www.gutenberg.org/ebooks/1342.txt.utf-8
+- Use the gutenberg project disribution of the pride and prejudice book as test text we are are performing our conversion process on. Link: https://www.gutenberg.org/ebooks/1342.txt.utf-8
     - (mini example included in repo as pride_mini.txt)
 - Use pulsar functions to complete the functionality of the below python function (splitting/capitalization)
 
