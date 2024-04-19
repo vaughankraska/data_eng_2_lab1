@@ -6,7 +6,7 @@
 - Use pulsar functions to complete the functionality of the below python function (splitting/capitalization)
 
 - Notes on repo: 
-    * the docker stuff is broken and not working (using docker compose does not work for deploying locally or on any server)
+    * the docker compose is broken (using docker compose does not work for deploying locally or on any server). The original idea was to Dockerize this whole pipeline so you could just run docker compose up without any of these steps but I ran into some problems I couldn't fix in time.
     * You have to start the pulsar functions on every restart or attach the pulsar Function config files
     * You have to upload the pulsar function files to the pulsar cluster
     * exec into docker container as root with: docker exec -u root -it <containerid> /bin/bash
@@ -25,6 +25,7 @@ bin/pulsar standalone
 * upload pulsar functions to pulsar instance:
 ```bash
 docker cp functions/<function_file>.py <CONTAINER_ID>:/pulsar
+
 ```
 * upload/replace pulsar config:
 ```bash
@@ -74,7 +75,7 @@ RUST_LOG=info cargo run --release
 ```
 * run producer (with full text file): cd into /producer
 ```bash
-RUST_LOG=info FILE_PATH=pride_and_pred.txt cargo run --release
+RUST_LOG=info FILE_PATH=<path/to/textfile.txt or blank will default to pride_mini.txt> cargo run --release
 ```
 
 
