@@ -6,13 +6,13 @@
 - Use pulsar functions to complete the functionality of the below python function (splitting/capitalization)
 
 - Notes on repo: 
-* the docker stuff is broken and not working (using docker compose does not work for deploying locally or on any server)
-* You have to start the pulsar functions on every restart or attach the pulsar Function config files
-* You have to upload the pulsar function files to the pulsar cluster
-* exec into docker container as root with: docker exec -u root -it <containerid> /bin/bash
+    * the docker stuff is broken and not working (using docker compose does not work for deploying locally or on any server)
+    * You have to start the pulsar functions on every restart or attach the pulsar Function config files
+    * You have to upload the pulsar function files to the pulsar cluster
+    * exec into docker container as root with: docker exec -u root -it <containerid> /bin/bash
 
 ## To run
-* start pulsar (with docker):
+* start pulsar (with docker) in a session:
 ```bash
 docker run -it \
 -p 6650:6650 \
@@ -22,7 +22,7 @@ docker run -it \
 apachepulsar/pulsar:3.2.2 \
 bin/pulsar standalone
 ```
-* upload pulsar functions:
+* upload pulsar functions to pulsar instance:
 ```bash
 docker cp functions/<function_file>.py <CONTAINER_ID>:/pulsar
 ```
@@ -31,23 +31,12 @@ docker cp functions/<function_file>.py <CONTAINER_ID>:/pulsar
 docker cp standalone.conf <CONTAINER_ID>:/pulsar/conf/standalone.conf
 ```
 OR just add functionsWorkerEnabled=true to existing standalone.conf
-
-* producer (with full text file): cd into /producer
-```bash
-RUST_LOG=info FILE_PATH=pride_and_pred.txt cargo run --release
-```
-* consumer: cd into consumer
-```bash
-RUST_LOG=info cargo run --release
-```
-
-### Running the pulsar functions:
-* Capitalizer
+* Start Capitalizer
 ```bash
 bin/pulsar-admin functions localrun   --py $PWD/capitalizer.py   --classname capitalizer   --inputs persistent://public/default/split   --output persistent://public/default/upper
 ```
 
-* Splitter
+* Start Splitter
 ```bash
 bin/pulsar-admin functions localrun   --py $PWD/splitter.py   --classname splitter.SplitterFunc   --inputs persistent://public/default/raw   --output persistent://public/default/split
 ```
@@ -78,6 +67,16 @@ bin/pulsar-admin functions start \
     --namespace default \
     --name split \
 ```
+
+* start consumer: cd into /consumer
+```bash
+RUST_LOG=info cargo run --release
+```
+* run producer (with full text file): cd into /producer
+```bash
+RUST_LOG=info FILE_PATH=pride_and_pred.txt cargo run --release
+```
+
 
 ## Messaging flow:
 text file -> 
