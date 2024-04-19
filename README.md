@@ -9,6 +9,7 @@
 * the docker stuff is broken and not working (using docker compose does not work for deploying locally or on any server)
 * You have to start the pulsar functions on every restart or attach the pulsar Function config files
 * You have to upload the pulsar function files to the pulsar cluster
+* exec into docker container as root with: docker exec -u root -it <containerid> /bin/bash
 
 ## To run
 * start pulsar (with docker):
