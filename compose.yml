@@ -1,50 +1,44 @@
 version: '3'
-networks:
-  pulsar:
-    driver: bridge
 services:
-  # start pulsar standalone
+  # Start pulsar
   pulsar:
-    image: apachepulsar/pulsar:3.2.2
-    networks:
-      - pulsar
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pulsar
+    hostname: pulsar
+    restart: on-failure
+    environment:
+      - PULSAR_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
     ports:
       - "6650:6650"
       - "8080:8080"
-    # environment:
-    #   PULSAR_PREFIX_xxx: yyy
     volumes:
-      - type: volume
-        source: pulsardata
-        target: /pulsar/data
-      - type: volume
-        source: pulsarconf
-        target: /pulsar/conf
-    command: "bin/pulsar standalone"
+      - pulsardata:/pulsar/data
+      - pulsarconf:/pulsar/conf
   # start consumer
   consumer:
     build: consumer
     container_name: consumer
-    networks:
-      - pulsar
     ports:
       - "3000:3000"
     environment:
       - RUST_LOG=info
+      - PULSAR_ADDRESS=pulsar://localhost:6650
     depends_on:
-      - pulsar
+      pulsar:
+        condition: service_started
     command: "/bin/server"
   # start producer
   producer:
     build: producer
     container_name: producer
-    networks:
-      - pulsar
     ports:
       - "3001:3001"
     depends_on:
       - consumer
     environment:
+      - PULSAR_ADDRESS=pulsar://localhost:6650
       - RUST_LOG=info
       - FILE_PATH=pride_mini.txt
     command: "/bin/server"

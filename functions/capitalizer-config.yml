@@ -1,0 +1,13 @@
+tenant: "public"
+namespace: "default"
+name: "cap"
+inputs:
+  - "persistent://public/default/split"
+output: "persistent://public/default/upper"
+py: "~/pulsar/capitalizer.py"
+className: "splitter"
+parallelism: 1
+resources:
+  cpu: 1
+  ram: 8589934592
+autoAck: true
