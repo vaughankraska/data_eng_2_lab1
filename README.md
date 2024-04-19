@@ -3,8 +3,34 @@
 - Use rust to implement the producers and consumers
 - Use the gutenberg project disribution of the pride and prejudice book as the text we are are performing our capization process on. Link: https://www.gutenberg.org/ebooks/1342.txt.utf-8
     - (mini example included in repo as pride_mini.txt)
+- Use pulsar functions to complete the functionality of the below python function (splitting/capitalization)
+
+- Notes on repo: 
+* the docker stuff is broken and not working (using docker compose does not work for deploying locally or on any server)
+* You have to start the pulsar functions on every restart or attach the pulsar Function config files
+* You have to upload the pulsar function files to the pulsar cluster
 
 ## To run
+* start pulsar (with docker):
+```bash
+docker run -it \
+-p 6650:6650 \
+-p 8080:8080 \
+--mount source=pulsardata,target=/pulsar/data \
+--mount source=pulsarconf,target=/pulsar/conf \
+apachepulsar/pulsar:3.2.2 \
+bin/pulsar standalone
+```
+* upload pulsar functions:
+```bash
+docker cp functions/<function_file>.py <CONTAINER_ID>:/pulsar
+```
+* upload/replace pulsar config:
+```bash
+docker cp standalone.conf <CONTAINER_ID>:/pulsar/conf/standalone.conf
+```
+OR just add functionsWorkerEnabled=true to existing standalone.conf
+
 * producer (with full text file): cd into /producer
 ```bash
 RUST_LOG=info FILE_PATH=pride_and_pred.txt cargo run --release
@@ -13,15 +39,45 @@ RUST_LOG=info FILE_PATH=pride_and_pred.txt cargo run --release
 ```bash
 RUST_LOG=info cargo run --release
 ```
+
 ### Running the pulsar functions:
 * Capitalizer
 ```bash
 bin/pulsar-admin functions localrun   --py $PWD/capitalizer.py   --classname capitalizer   --inputs persistent://public/default/split   --output persistent://public/default/upper
 ```
+
 * Splitter
 ```bash
 bin/pulsar-admin functions localrun   --py $PWD/splitter.py   --classname splitter.SplitterFunc   --inputs persistent://public/default/raw   --output persistent://public/default/split
 ```
+OR
+```bash
+bin/pulsar-admin functions create \
+  --name cap
+  --py $PWD/capitalizer.py \
+  --classname capitalizer \
+  --inputs persistent://public/default/split
+  --output persistent://public/default/upper
+
+bin/pulsar-admin functions create \
+  --name split
+  --py $PWD/splitter.py \
+  --classname splitter.SplitterFunc \
+  --inputs persistent://public/default/raw
+  --output persistent://public/default/split
+```
+and start them:
+```bash
+bin/pulsar-admin functions start \
+    --tenant public \
+    --namespace default \
+    --name cap \
+bin/pulsar-admin functions start \
+    --tenant public \
+    --namespace default \
+    --name split \
+```
+
 ## Messaging flow:
 text file -> 
     producer -> 
